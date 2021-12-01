@@ -56,7 +56,7 @@ func (node *PFCPNode) handleNewPeers() {
 	log.Infoln("listening for new PFCP connections on", lAddrStr)
 
 	for {
-		buf := make([]byte, 1024)
+		buf := make([]byte, PktBufSz)
 
 		n, rAddr, err := node.ReadFrom(buf)
 		if err != nil {

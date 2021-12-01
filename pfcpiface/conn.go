@@ -71,6 +71,7 @@ func (node *PFCPNode) NewPFCPConn(lAddr, rAddr string, buf []byte) *PFCPConn {
 	conn, err := reuse.Dial("udp", lAddr, rAddr)
 	if err != nil {
 		log.Errorln("dial socket failed", err)
+		return nil
 	}
 
 	ts := recoveryTS{
@@ -138,8 +139,11 @@ func (pConn *PFCPConn) setLocalNodeID(id string) {
 func (pConn *PFCPConn) Serve() {
 	go func() {
 		for {
-			buf := make([]byte, 1024)
-
+			err := pConn.SetReadDeadline(time.Now().Add(readTimeout))
+			if err != nil {
+				log.Fatalln("Unable to set deadline for read:", err)
+			}
+			buf := make([]byte, PktBufSz)
 			n, err := pConn.Read(buf)
 			if err != nil {
 				if errors.Is(err, net.ErrClosed) {
